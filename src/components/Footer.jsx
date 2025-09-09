@@ -608,7 +608,7 @@ const Footer = () => {
               }}
             ></div>
           ))}
-          {[...Array(4)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <div
               key={`cross-${i}`}
               className="absolute text-amber-400/20 ethereal-float font-['Playfair_Display'] text-xl select-none"
