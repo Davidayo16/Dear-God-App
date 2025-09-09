@@ -53,7 +53,7 @@ const Navigation = () => {
                 <img
                   src="/images/logoc.png"
                   alt="Dear God Community Church Logo"
-                  className="h-15 w-auto"
+                  className="h-10 w-auto"
                 />
               </div>
             </a>
