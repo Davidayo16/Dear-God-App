@@ -2,25 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { debounce } from "lodash";
 
 const CommunityAndConnection = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   const [isHovering, setIsHovering] = useState(false);
   const sectionRef = useRef(null);
-
-  // Trigger visibility when section enters viewport
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   // Throttled mouse move
   useEffect(() => {
@@ -69,45 +53,6 @@ const CommunityAndConnection = () => {
             transform: translateY(-15px);
             opacity: 0.8;
           }
-        }
-
-        @keyframes textReveal {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .fade-in-up {
-          opacity: ${isVisible ? 1 : 0};
-          transform: translateY(${isVisible ? 0 : 20}px);
-          transition: all 1s ease-out;
-          will-change: opacity, transform;
-        }
-
-        .fade-in-delay-1 {
-          opacity: ${isVisible ? 1 : 0};
-          transform: translateY(${isVisible ? 0 : 20}px);
-          transition: all 1.2s ease-out 0.2s;
-          will-change: opacity, transform;
-        }
-
-        .fade-in-delay-2 {
-          opacity: ${isVisible ? 1 : 0};
-          transform: translateY(${isVisible ? 0 : 20}px);
-          transition: all 1.4s ease-out 0.4s;
-          will-change: opacity, transform;
-        }
-
-        .scale-in {
-          opacity: ${isVisible ? 1 : 0};
-          transform: scale(${isVisible ? 1 : 0.9});
-          transition: all 1.2s ease-out 0.3s;
-          will-change: opacity, transform;
         }
 
         .prism-text {
@@ -205,7 +150,7 @@ const CommunityAndConnection = () => {
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Text Content */}
             <div className="w-full lg:w-1/2 text-center lg:text-left lg:order-2">
-              <div className="mb-8 fade-in-up">
+              <div className="mb-8">
                 <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4 tracking-tight text-shadow-divine">
                   Community
                   <span className="block mt-2 prism-text font-900">
@@ -216,7 +161,7 @@ const CommunityAndConnection = () => {
               </div>
 
               {/* Mobile Image */}
-              <div className="w-full scale-in lg:hidden flex justify-center mb-8">
+              <div className="w-full lg:hidden flex justify-center mb-8">
                 <div className="relative w-64 h-64">
                   <div className="absolute -inset-3 bg-gradient-to-r from-amber-400/20 to-amber-600/20 blur-lg"></div>
                   <div className="relative w-full h-full border-2 border-amber-400/40 holy-glow overflow-hidden rounded-lg">
@@ -232,7 +177,7 @@ const CommunityAndConnection = () => {
               </div>
 
               {/* Description */}
-              <div className="fade-in-delay-1">
+              <div>
                 <div className="relative glass-divine p-6 sm:p-8 group">
                   <div className="space-y-4">
                     <p className="text-base sm:text-lg lg:text-xl text-slate-100 leading-relaxed font-['Inter'] font-light">
@@ -256,7 +201,7 @@ const CommunityAndConnection = () => {
               </div>
 
               {/* Stats */}
-              <div className="fade-in-delay-2 mt-8">
+              <div className="mt-8">
                 <div className="grid grid-cols-3 gap-4 sm:gap-6">
                   {[
                     { number: "100+", label: "Prayer Warriors" },
@@ -277,7 +222,7 @@ const CommunityAndConnection = () => {
             </div>
 
             {/* Desktop Image */}
-            <div className="hidden lg:block w-full lg:w-1/2 scale-in lg:order-1">
+            <div className="hidden lg:block w-full lg:w-1/2 lg:order-1">
               <div className="relative w-full max-w-[400px] aspect-square mx-auto">
                 <div className="absolute -inset-4 bg-gradient-to-r from-amber-400/20 to-amber-600/20 blur-lg"></div>
                 <div className="relative w-full h-full border-2 border-amber-400/50 holy-glow overflow-hidden rounded-lg">
