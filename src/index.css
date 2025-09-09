@@ -2,12 +2,26 @@
 
 /* Custom styles */
 @layer base {
-  html {
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a; /* Matches bg-slate-900 */
+    min-height: 100vh;
+    overflow-x: hidden;
     scroll-behavior: smooth;
-  }
-  
-  body {
     font-family: 'Inter', sans-serif;
   }
-}
 
+  /* Ensure all sections and footer have a consistent dark background */
+  section, footer {
+    background-color: #0f172a; /* Matches bg-slate-900 */
+    position: relative;
+    min-height: 100vh; /* Full viewport coverage */
+  }
+
+  /* Optimize rendering for animations */
+  [class*="ethereal-float"], [class*="crystalline"] {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+}
