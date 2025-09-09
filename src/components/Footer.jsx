@@ -4,13 +4,26 @@ import { debounce } from "lodash";
 
 const Footer = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [email, setEmail] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    submissionType: "",
+    message: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(""); // "success", "error", "invalid", or ""
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
   const [isHovering, setIsHovering] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const sectionRef = useRef(null);
   const formRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  const submissionOptions = [
+    { value: "testimony", label: "Share a Testimony", icon: "🙌" },
+    { value: "prayer_request", label: "Prayer Request", icon: "🙏" },
+    { value: "contact_us", label: "Contact Us", icon: "💬" },
+  ];
 
   // Trigger visibility when section enters viewport
   useEffect(() => {
@@ -25,6 +38,17 @@ const Footer = () => {
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Throttled mouse move
@@ -54,10 +78,34 @@ const Footer = () => {
     return emailRegex.test(email);
   };
 
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmissionTypeSelect = (option) => {
+    handleInputChange("submissionType", option.value);
+    setIsDropdownOpen(false);
+  };
+
+  const getSelectedOption = () => {
+    return submissionOptions.find(
+      (option) => option.value === formData.submissionType
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(formData.email)) {
+      setSubmitStatus("invalid");
+      setTimeout(() => setSubmitStatus(""), 3000);
+      return;
+    }
+
+    if (!formData.submissionType) {
       setSubmitStatus("invalid");
       setTimeout(() => setSubmitStatus(""), 3000);
       return;
@@ -66,11 +114,16 @@ const Footer = () => {
     setIsSubmitting(true);
 
     try {
+      const selectedOption = getSelectedOption();
       const templateParams = {
-        user_email: email,
+        user_name: formData.name,
+        user_email: formData.email,
+        submission_type: selectedOption.label,
+        user_message: formData.message,
         submission_date: new Date().toLocaleString(),
-        to_email: "client@deargod.com", // Replace with actual client email
+        to_email: "client@deargod.com",
       };
+
       await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_losh0yk",
         import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_f3o7guj",
@@ -79,7 +132,12 @@ const Footer = () => {
       );
 
       setSubmitStatus("success");
-      setEmail("");
+      setFormData({
+        name: "",
+        email: "",
+        submissionType: "",
+        message: "",
+      });
       setTimeout(() => setSubmitStatus(""), 5000);
     } catch (error) {
       console.error("EmailJS error:", error);
@@ -87,6 +145,24 @@ const Footer = () => {
       setTimeout(() => setSubmitStatus(""), 3000);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const getDescription = () => {
+    const selectedOption = getSelectedOption();
+    if (!selectedOption) {
+      return "Connect with our prayer community. Share your testimony, request prayer, or get in touch with us.";
+    }
+
+    switch (selectedOption.value) {
+      case "testimony":
+        return "Share how God has moved in your life and encourage others with your testimony of His faithfulness.";
+      case "prayer_request":
+        return "Submit your prayer request and let our community stand with you in faith and intercession.";
+      case "contact_us":
+        return "Get in touch with our team. We'd love to hear from you and answer any questions you may have.";
+      default:
+        return "Connect with our prayer community. Share your testimony, request prayer, or get in touch with us.";
     }
   };
 
@@ -217,6 +293,32 @@ const Footer = () => {
           outline: none;
         }
 
+        .divine-dropdown {
+          background: rgba(15, 23, 42, 0.95);
+          border: 1px solid rgba(251, 191, 36, 0.3);
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+
+        .divine-dropdown:hover {
+          border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .dropdown-menu {
+          background: rgba(15, 23, 42, 0.98);
+          border: 1px solid rgba(251, 191, 36, 0.4);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(10px);
+        }
+
+        .dropdown-option {
+          transition: all 0.2s ease;
+        }
+
+        .dropdown-option:hover {
+          background: rgba(251, 191, 36, 0.1);
+        }
+
         .submit-button {
           background: linear-gradient(
             135deg,
@@ -281,14 +383,14 @@ const Footer = () => {
         {/* Main Content */}
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
-            {/* Newsletter Signup Section */}
+            {/* Contact Form Section */}
             <div className="text-center mb-12 fade-in-up">
-              <div className="relative glass-divine rounded-2xl p-6 sm:p-8 lg:p-10 group mx-auto max-w-3xl">
+              <div className="relative glass-divine rounded-2xl p-6 sm:p-8 lg:p-10 group mx-auto max-w-4xl">
                 <div className="relative z-10">
                   {/* Heading */}
                   <div className="mb-6">
                     <h3 className="font-['Playfair_Display'] text-2xl sm:text-3xl lg:text-4xl font-black text-white mb-3 tracking-tight text-shadow-divine">
-                      Stay Connected with
+                      Connect with
                       <span className="block mt-1 prism-text font-900">
                         Dear God Community
                       </span>
@@ -296,35 +398,137 @@ const Footer = () => {
                     <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full mx-auto holy-glow"></div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-['Inter'] font-light mb-6 max-w-xl mx-auto">
-                    Join our prayer community and receive updates about the 100
-                    Days of Prayer for 2026, faith encouragement, and
-                    testimonies of God's faithfulness.
+                  {/* Dynamic Description */}
+                  <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-['Inter'] font-light mb-8 max-w-2xl mx-auto">
+                    {getDescription()}
                   </p>
 
-                  {/* Email Signup Form */}
+                  {/* Contact Form */}
                   <form
                     ref={formRef}
                     onSubmit={handleSubmit}
-                    className="max-w-xl mx-auto"
+                    className="max-w-2xl mx-auto space-y-4"
                   >
-                    <div className="flex flex-col sm:flex-row gap-3 items-stretch">
-                      <div className="flex-1 relative">
+                    {/* Name and Submission Type Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Name Input */}
+                      <div className="relative">
                         <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="Enter your email address"
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                          }
+                          placeholder="Your full name"
                           className="divine-input w-full px-4 py-3 text-white placeholder-slate-400 rounded-lg font-['Inter'] text-sm sm:text-base"
                           required
                           disabled={isSubmitting}
                         />
                       </div>
+
+                      {/* Submission Type Dropdown */}
+                      <div className="relative" ref={dropdownRef}>
+                        <div
+                          className="divine-dropdown w-full px-4 py-3 text-white rounded-lg font-['Inter'] text-sm sm:text-base flex items-center justify-between"
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        >
+                          <span
+                            className={
+                              formData.submissionType
+                                ? "text-white"
+                                : "text-slate-400"
+                            }
+                          >
+                            {formData.submissionType
+                              ? getSelectedOption().label
+                              : "Select purpose"}
+                          </span>
+                          <svg
+                            className={`w-5 h-5 transition-transform duration-200 ${
+                              isDropdownOpen ? "rotate-180" : ""
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </div>
+
+                        {isDropdownOpen && (
+                          <div className="dropdown-menu absolute top-full left-0 right-0 mt-1 rounded-lg z-50 overflow-hidden">
+                            {submissionOptions.map((option) => (
+                              <div
+                                key={option.value}
+                                className="dropdown-option px-4 py-3 text-white cursor-pointer flex items-center gap-3 font-['Inter'] text-sm sm:text-base"
+                                onClick={() =>
+                                  handleSubmissionTypeSelect(option)
+                                }
+                              >
+                                <span className="text-lg">{option.icon}</span>
+                                <span>{option.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Email Input */}
+                    <div className="relative">
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
+                        placeholder="Your email address"
+                        className="divine-input w-full px-4 py-3 text-white placeholder-slate-400 rounded-lg font-['Inter'] text-sm sm:text-base"
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* Message Textarea */}
+                    <div className="relative">
+                      <textarea
+                        value={formData.message}
+                        onChange={(e) =>
+                          handleInputChange("message", e.target.value)
+                        }
+                        placeholder={
+                          formData.submissionType === "testimony"
+                            ? "Share your testimony of God's goodness..."
+                            : formData.submissionType === "prayer_request"
+                            ? "Share your prayer request..."
+                            : formData.submissionType === "contact_us"
+                            ? "Your message..."
+                            : "Your message..."
+                        }
+                        rows={4}
+                        className="divine-input w-full px-4 py-3 text-white placeholder-slate-400 rounded-lg font-['Inter'] text-sm sm:text-base resize-none"
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex justify-center pt-2">
                       <button
                         type="submit"
-                        disabled={isSubmitting || !email}
-                        className={`submit-button px-6 py-3 text-white font-semibold text-sm sm:text-base rounded-lg transition-all duration-300 ${
+                        disabled={
+                          isSubmitting ||
+                          !formData.name ||
+                          !formData.email ||
+                          !formData.submissionType ||
+                          !formData.message
+                        }
+                        className={`submit-button px-8 py-3 text-white font-semibold text-sm sm:text-base rounded-lg transition-all duration-300 min-w-[160px] ${
                           submitStatus === "success"
                             ? "success-state"
                             : submitStatus === "error" ||
@@ -337,107 +541,43 @@ const Footer = () => {
                           {isSubmitting
                             ? "Sending..."
                             : submitStatus === "success"
-                            ? "Subscribed!"
+                            ? "Sent Successfully!"
                             : submitStatus === "error"
                             ? "Try Again"
                             : submitStatus === "invalid"
-                            ? "Invalid Email"
-                            : "Join Community"}
+                            ? "Please Check Form"
+                            : "Send Message"}
                         </span>
                       </button>
                     </div>
 
                     {/* Status Messages */}
                     {submitStatus === "success" && (
-                      <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                        <p className="text-green-400 font-['Inter'] text-sm font-medium">
-                          Thank you! You've successfully joined our prayer
-                          community.
+                      <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <p className="text-green-400 font-['Inter'] text-sm font-medium text-center">
+                          Thank you! Your message has been sent successfully.
+                          We'll get back to you soon.
                         </p>
                       </div>
                     )}
 
                     {submitStatus === "error" && (
-                      <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                        <p className="text-red-400 font-['Inter'] text-sm font-medium">
+                      <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                        <p className="text-red-400 font-['Inter'] text-sm font-medium text-center">
                           Something went wrong. Please try again.
                         </p>
                       </div>
                     )}
 
                     {submitStatus === "invalid" && (
-                      <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <p className="text-yellow-400 font-['Inter'] text-sm font-medium">
-                          Please enter a valid email address.
+                      <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                        <p className="text-yellow-400 font-['Inter'] text-sm font-medium text-center">
+                          Please fill in all fields with valid information.
                         </p>
                       </div>
                     )}
                   </form>
                 </div>
-              </div>
-            </div>
-
-            {/* Footer Info */}
-            <div className="fade-in-delay-1">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 text-center md:text-left">
-                {/* Uncomment if needed */}
-                {/* <div>
-                  <h4 className="font-['Playfair_Display'] text-lg font-bold text-amber-400 mb-3">
-                    About Dear God
-                  </h4>
-                  <p className="text-slate-400 font-['Inter'] font-light text-sm leading-relaxed">
-                    A community of prayer warriors interceding, believing, and preparing hearts for God's greater works.
-                  </p>
-                </div> */}
-
-                {/* <div>
-                  <h4 className="font-['Playfair_Display'] text-lg font-bold text-amber-400 mb-3">
-                    Connect With Us
-                  </h4>
-                  <div className="flex justify-center md:justify-start gap-3">
-                    <a
-                      href="https://www.facebook.com/share/1BDcMLfNyy/?mibextid=wwXIfr"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 bg-amber-400/20 hover:bg-amber-400/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105"
-                    >
-                      <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.04c-5.5 0-9.96 4.46-9.96 9.96 0 5.06 3.75 9.24 8.66 9.91v-7h-2.6v-2.91h2.6v-2.22c0-2.58 1.53-4 3.88-4 1.12 0 2.08.08 2.36.12v2.74h-1.62c-1.27 0-1.52.61-1.52 1.5v1.97h3.04l-.4 2.91h-2.64v7c4.91-.67 8.66-4.85 8.66-9.91 0-5.5-4.46-9.96-9.96-9.96z" />
-                      </svg>
-                    </a>
-                    <a
-                      href="https://x.com/iamgoldmathias?t=iut0FJjTuKtQPRzU5TGp-w&s=09"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 bg-amber-400/20 hover:bg-amber-400/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105"
-                    >
-                      <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                      </svg>
-                    </a>
-                    <a
-                      href="https://www.instagram.com/iamgoldmathias?igsh=N3VkYzRqeWkxNHZ5"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 bg-amber-400/20 hover:bg-amber-400/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105"
-                    >
-                      <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.16c3.21 0 3.58.01 4.84.07 1.17.06 1.81.25 2.23.42.56.22.96.49 1.38.91.42.42.69.82.91 1.38.17.42.36 1.06.42 2.23.06 1.26.07 1.63.07 4.84s-.01 3.58-.07 4.84c-.06 1.17-.25 1.81-.42 2.23-.22.56-.49.96-.91 1.38-.42.42-.82.69-1.38.91-.42.17-1.06.36-2.23.42-1.26.06-1.63.07-4.84.07s-3.58-.01-4.84-.07c-1.17-.06-1.81-.25-2.23-.42-.56-.22-.96-.49-1.38-.91-.42-.42-.69-.82-.91-1.38-.17-.42-.36-1.06-.42-2.23-.06-1.26-.07-1.63-.07-4.84s.01-3.58.07-4.84c.06-1.17.25-1.81.42-2.23.22-.56.49-.96.91-1.38.42-.42.82-.69 1.38-.91.42-.17 1.06-.36 2.23-.42 1.26-.06 1.63-.07 4.84-.07zm0-2.16c-3.25 0-3.66.01-4.94.07-1.29.06-2.17.27-2.94.58-.8.32-1.48.77-2.15 1.44s-1.12 1.35-1.44 2.15c-.31.77-.52 1.65-.58 2.94-.06 1.28-.07 1.69-.07 4.94s.01 3.66.07 4.94c.06 1.29.27 2.17.58 2.94.32.8.77 1.48 1.44 2.15s1.35 1.12 2.15 1.44c.77.31 1.65.52 2.94.58 1.28.06 1.69.07 4.94.07s3.66-.01 4.94-.07c1.29-.06 2.17-.27 2.94-.58.8-.32 1.48-.77 2.15-1.44s1.12-1.35 1.44-2.15c.31-.77.52-1.65.58-2.94.06-1.28.07-1.69.07-4.94s-.01-3.66-.07-4.94c-.06-1.29-.27-2.17-.58-2.94-.32-.8-.77-1.48-1.44-2.15s-1.35-1.12-2.15-1.44c-.77-.31-1.65-.52-2.94-.58-1.28-.06-1.69-.07-4.94-.07z" />
-                        <path d="M12 5.84a6.16 6.16 0 100 12.32 6.16 6.16 0 000-12.32zm0 10.16a4 4 0 110-8 4 4 0 010 8z" />
-                        <circle cx="18.41" cy="5.59" r="1.44" />
-                      </svg>
-                    </a>
-                  </div>
-                </div> */}
-
-                {/* <div>
-                  <h4 className="font-['Playfair_Display'] text-lg font-bold text-amber-400 mb-3">
-                    Our Mission
-                  </h4>
-                  <p className="text-slate-400 font-['Inter'] font-light text-sm leading-relaxed">
-                    Standing in the gap, lifting burdens together, and preparing hearts for God's greater works.
-                  </p>
-                </div> */}
               </div>
             </div>
 
