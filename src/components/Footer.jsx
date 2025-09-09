@@ -584,8 +584,8 @@ const Footer = () => {
             {/* Copyright */}
             <div className="fade-in-delay-2 mt-10 pt-6 border-t border-amber-400/20 text-center">
               <p className="text-slate-500 font-['Inter'] text-sm font-light">
-                © 2024 Dear God Community. Made with faith and love. All rights
-                reserved.
+                © {new Date().getFullYear()} Dear God Community. Made with faith
+                and love. All rights reserved.
               </p>
             </div>
           </div>
