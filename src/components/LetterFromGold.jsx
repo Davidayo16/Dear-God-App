@@ -238,7 +238,7 @@ const LetterFromGold = () => {
                   <div className="absolute -inset-4 bg-gradient-to-r from-amber-400/20 to-amber-600/20 blur-lg"></div>
                   <div className="relative w-full h-full border-2 border-amber-400/40 holy-glow overflow-hidden rounded-lg">
                     <img
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                      src="/images/gold.jpg"
                       alt="Mathias Gold - Founder of Dear God"
                       className="w-full h-full object-cover"
                       loading="lazy"
@@ -368,7 +368,7 @@ const LetterFromGold = () => {
                 <div className="absolute -inset-4 bg-gradient-to-r from-amber-400/20 to-amber-600/20 blur-lg"></div>
                 <div className="relative w-full h-full border-2 border-amber-400/50 holy-glow overflow-hidden rounded-lg">
                   <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                    src="/images/gold.jpg"
                     alt="Mathias Gold - Founder of Dear God"
                     className="w-full h-full object-cover"
                     loading="lazy"
